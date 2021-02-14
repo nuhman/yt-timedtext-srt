@@ -8,11 +8,24 @@ const readFile = (file) => {
 
 const read = async (input) => {
     try {
-        console.log('reading file contents');
-        const textContent = await readFile(input.files[0]);
-        console.log('done reading');
+        
+        dispayResult({
+            content: 'Parsing and Converting the file contents. Please wait...'
+        });
+
+        const textContent = await readFile(input.files.length && input.files[0]);        
         const parsedSegments = await parseTimedText(textContent);
-        // const srtData = convertSegmentsToSrt(parsedSegments);
+        const filename = createSrtFileName(input.files.length && input.files[0].name);
+        
+        await handleProcessAndDownload(parsedSegments, filename);        
+
+        setTimeout(() => {
+            dispayResult({
+                content: 'Your converted file has been downloaded...'
+            });
+        }, 1000);        
+        
+        
     } catch (err) {
         console.log('error occured');
         console.log(err);
@@ -90,6 +103,25 @@ const getSegments = async (events) => {
 
 }
 
+/**
+ * 
+ * @param {Array<Segment>} segments 
+ */
+const convertSegmentsToSrt = async (segments) => {
+    let srtString = '';
+
+    segments.map((segment, index) => {
+        const startTime = convertToStrTime(segment.startTimeMs);    
+        const endTime = convertToStrTime(segment.endTimeMs);    
+        const text = "" + (index + 1) + "\r\n" +
+                startTime + " --> " + endTime + "\r\n" +
+                segment.text + "\r\n\r\n";
+        srtString += text;
+    });
+
+    return srtString;
+    
+}
 
 const convertToStrTime = (ms) => {
     
@@ -104,7 +136,8 @@ const convertToStrTime = (ms) => {
     const hours = Math.floor(minutes / 60);
     minutes = minutes % 60;
 
-    return paddZero([hours, minutes, seconds, milliseconds]).join(':');
+    // return format: 00:00:06,319
+    return `${paddZero([hours, minutes, seconds]).join(':')},${paddZero([milliseconds])[0]}`;
 
 }
 
@@ -119,10 +152,24 @@ const paddZero = (numList) => {
 
 }
 
-const dispayResult = (result) => {
-    if (!result.isInvalid) {
+const createSrtFileName = (fileName) => {
+    
+    if (!fileName) return 'captions';
 
-    } else {
-        msg.innerText = result.content;
+    let splitName = fileName.split('.');
+    if (splitName.length > 1) {
+        splitName = splitName.slice(0, splitName.length - 1);
     }
+    return splitName.join('.');
+}
+
+const handleProcessAndDownload = async (parsedSegments, filename) => {    
+    const srtData = await convertSegmentsToSrt(parsedSegments);        
+    var blob = new Blob([srtData], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, `${filename}.srt`);
+}
+
+
+const dispayResult = (result) => {
+    msg.innerText = result.content;
 }
