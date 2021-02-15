@@ -43,9 +43,11 @@ const read = async (input) => {
  * @returns {Array<Segment>} segments
  */
 const parseTimedText = async (txt) => {
-    const timedTextJson = JSON.parse(txt);
+    const timedTextJson = JSON.parse(txt);    
     const events = timedTextJson.events || [];
-    return await getSegments(events);
+    const x = await getSegments(events);
+    console.log(x);
+    return x;
 }
 
 /**
@@ -78,7 +80,31 @@ const getSegments = async (events) => {
         startTimeMs: 0,
     };  
 
-    events.map(evt => {         
+    // events = events.slice(0, 10);
+    // console.log(events);
+
+    events.map(evt => {
+        
+        // check whether it is manually uploaded CC or not
+        if (!evt.wWinId && evt.segs) {
+
+            segment.startTimeMs = evt.tStartMs;
+            segment.endTimeMs = evt.tStartMs + evt.dDurationMs;
+            (evt.segs || []).map(seg => {
+                const text = seg.utf8; //.trim();                
+                if (text && text !== '\n') {
+                    segmentText += (text || '');
+                }
+            }); 
+            segment.text = segmentText;            
+            segments.push(segment);
+            segment = {};
+            segmentText = '';
+
+            return;
+        }
+
+        // Below code is a fall back for Auto Generated CC
 
         if (!evt.aAppend) {
             segment.startTimeMs = evt.tStartMs;
