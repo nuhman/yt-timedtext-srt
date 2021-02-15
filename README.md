@@ -10,7 +10,7 @@ Steps to download captions including auto-generated captions from youtube as a S
     - Try filtering for `timedtext` in the network tab  
     - Open the `timedtext` in a new tab & right click -> save file  
   
-    ![Screenshot](https://github.com/nuhman/yt-timedtext-to-srt/blob/master/screenshots/timedtext-demo.png "Fetch timedtext file by clicking on 'open in new tab'")  
+    ![Screenshot](https://github.com/nuhman/yt-timedtext-srt/blob/master/screenshots/timedtext-demo.png "Fetch timedtext file by clicking on 'open in new tab'")  
   
 * Once you have the `timedtext.json` file downloaded, Go to https://nuhman.github.io/yt-timedtext-to-srt/ and upload the file  
 * After the file is processed, SRT file will be downloaded to your local machine  
